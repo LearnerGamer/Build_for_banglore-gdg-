@@ -1,0 +1,194 @@
+.app-container {
+  display: grid;
+  grid-template-columns: 70px 350px 1fr 340px;
+  grid-template-rows: 100vh;
+  gap: 16px;
+  padding: 16px;
+  max-width: 100vw;
+  max-height: 100vh;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.center-panel {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 0 0 1px var(--border-color);
+  flex: 1;
+}
+
+.panel-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--border-color);
+  background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
+}
+
+.panel-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.panel-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+
+/* Specific elements */
+.sos-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.sos-card:hover {
+  background: var(--bg-panel-hover);
+  transform: translateY(-2px);
+  border-color: rgba(255,255,255,0.15);
+}
+
+.sos-card.critical {
+  border-left: 4px solid var(--priority-critical);
+}
+.sos-card.high {
+  border-left: 4px solid var(--priority-high);
+}
+.sos-card.medium {
+  border-left: 4px solid var(--priority-medium);
+}
+.sos-card.low {
+  border-left: 4px solid var(--priority-low);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+.badge.critical { background: var(--priority-critical-glow); color: #ff8a8a; border: 1px solid rgba(239, 68, 68, 0.3); }
+.badge.high { background: rgba(249, 115, 22, 0.2); color: #fdba74; border: 1px solid rgba(249, 115, 22, 0.3); }
+.badge.medium { background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.3); }
+.badge.low { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+.button-primary {
+  background: var(--brand-blue);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 600;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px var(--brand-blue-glow);
+}
+.button-primary:hover {
+  background: #2563eb;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px var(--brand-blue-glow);
+}
+
+.button-success {
+  background: var(--success-green);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 600;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+.button-success:hover {
+  background: #16a34a;
+}
+
+.button-danger {
+  background: var(--priority-critical);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 600;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px var(--priority-critical-glow);
+}
+.button-danger:hover {
+  background: #dc2626;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  font-weight: 500;
+}
+.form-input {
+  width: 100%;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid var(--border-color);
+  color: var(--text-main);
+  padding: 12px;
+  border-radius: 8px;
+  font-family: inherit;
+  resize: vertical;
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 2px var(--brand-blue-glow);
+}
+
+.top-bar-branding {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 10;
+  background: rgba(10, 12, 16, 0.8);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  color: white;
+}
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background-color: var(--priority-critical);
+  border-radius: 50%;
+  animation: pulse-red 1.5s infinite;
+}
