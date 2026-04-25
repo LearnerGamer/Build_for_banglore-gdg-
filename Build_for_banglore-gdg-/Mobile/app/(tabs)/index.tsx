@@ -87,8 +87,31 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, [isSosActive]);
 
-  const handleSOS = () => {
+  const handleSOS = async () => {
     setIsSosActive(true);
+    
+    // Send SOS Signal to Bridge Server
+    try {
+      const sosData = {
+        name: user?.name || 'Anonymous User',
+        email: user?.email || 'N/A',
+        latitude: location.latitude,
+        longitude: location.longitude,
+        areaName: 'Mobile App User',
+        priority: 'Critical',
+        type: 'Mobile Alert',
+        status: 'New'
+      };
+
+      await fetch('http://localhost:5000/api/sos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(sosData)
+      });
+      console.log('SOS Signal sent to bridge!');
+    } catch (error) {
+      console.error('Failed to send SOS signal to bridge:', error);
+    }
   };
 
   return (

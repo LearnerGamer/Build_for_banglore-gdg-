@@ -51,18 +51,33 @@ function AdminApp({ onBack }) {
     fetchFieldForces().then(data => setForces(data));
   }, []);
 
-  // --- LIVE SOS SYNC from localStorage (picks up citizen SOS events) ---
+  // --- LIVE SOS SYNC from Bridge Server ---
   useEffect(() => {
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem('sos_signals');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSignals(prev => {
-          if (parsed.length !== prev.length || parsed[0]?.id !== prev[0]?.id) {
-            return parsed;
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/sos');
+        if (response.ok) {
+          const bridgeSignals = await response.json();
+          if (bridgeSignals.length > 0) {
+            setSignals(prev => {
+              // Combine bridge signals with mock/existing ones, avoiding duplicates by ID
+              const existingIds = new Set(prev.map(s => s.id));
+              const newFromBridge = bridgeSignals.filter(s => !existingIds.has(s.id));
+              if (newFromBridge.length > 0) {
+                return [...newFromBridge, ...prev].slice(0, 50);
+              }
+              return prev;
+            });
           }
-          return prev;
-        });
+        }
+      } catch (e) {
+        console.warn('Bridge server not reachable, using local sync.');
+        // Fallback to local storage
+        const saved = localStorage.getItem('sos_signals');
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setSignals(prev => (parsed.length !== prev.length ? parsed : prev));
+        }
       }
     }, 3000);
     return () => clearInterval(interval);

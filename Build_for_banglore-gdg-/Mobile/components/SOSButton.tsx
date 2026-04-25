@@ -14,7 +14,7 @@ export const SOSButton: React.FC<SOSButtonProps> = ({ onSOS, isActive }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: any;
     if (isHolding && !isActive) {
       Animated.spring(scaleAnim, {
         toValue: 0.95,
