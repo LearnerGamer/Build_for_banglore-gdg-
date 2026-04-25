@@ -78,7 +78,7 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: any;
     if (isSosActive) {
       interval = setInterval(() => setLastSync(prev => prev + 1), 1000);
     } else {
