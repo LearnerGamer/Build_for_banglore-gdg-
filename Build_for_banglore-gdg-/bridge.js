@@ -17,6 +17,12 @@ const server = http.createServer((req, res) => {
   if (req.url === '/api/sos' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify(sosSignals));
+  } else if (req.url.startsWith('/api/sos/') && req.method === 'DELETE') {
+    const id = req.url.split('/').pop();
+    sosSignals = sosSignals.filter(s => s.id !== id);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ success: true, id }));
+    console.log('SOS Signal deleted:', id);
   } else if (req.url === '/api/sos' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });

@@ -1,7 +1,6 @@
-import React from 'react';
-import { Activity, MapPin, Clock, AlertTriangle } from 'lucide-react';
+import { Activity, MapPin, Clock, AlertTriangle, Trash2 } from 'lucide-react';
 
-const Sidebar = ({ signals, selectedSignal, onSelectSignal }) => {
+const Sidebar = ({ signals, selectedSignal, onSelectSignal, onDeleteSignal }) => {
 
   const getPriorityClass = (priority) => {
     switch (priority) {
@@ -66,9 +65,24 @@ const Sidebar = ({ signals, selectedSignal, onSelectSignal }) => {
                   {signal.priority === 'Critical' && <AlertTriangle size={12} style={{marginRight: '4px'}}/>}
                   {signal.priority}
                 </span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <Clock size={12} /> {formatTime(signal.timestamp)}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <Clock size={12} /> {formatTime(signal.timestamp)}
+                  </span>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDeleteSignal(signal.id);
+                    }}
+                    style={{
+                      background: 'none', border: 'none', padding: '4px', cursor: 'pointer',
+                      color: 'rgba(255,255,255,0.3)', borderRadius: '4px'
+                    }}
+                    className="delete-sos-btn"
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                </div>
               </div>
               <div style={{ fontWeight: 600, marginBottom: '4px', fontSize: '1rem' }}>
                 {signal.areaName}

@@ -10,12 +10,18 @@ import NavStrip from './components/NavStrip';
 import { initialSignals, generateMockSOS } from './utils/mockBackend';
 import { fetchFieldForces } from './modules/field-forces/fieldForcesAPI';
 import { ShieldAlert } from 'lucide-react';
+import ConfirmModal from './components/ConfirmModal';
+import Toast from './components/Toast';
 
 function AdminApp({ onBack }) {
   // --- STATE ---
   const [activeTab, setActiveTab] = useState('sos');
   const [layers, setLayers] = useState({ sos: true, shelters: true, forces: true, medical: true });
   const [draftCoords, setDraftCoords] = useState(null);
+  
+  // Custom Popup States
+  const [modalState, setModalState] = useState({ isOpen: false, title: '', message: '', onConfirm: () => {} });
+  const [toastState, setToastState] = useState({ isOpen: false, message: '' });
   
   const [signals, setSignals] = useState(() => {
     const saved = localStorage.getItem('sos_signals');
@@ -116,8 +122,28 @@ function AdminApp({ onBack }) {
     if (selectedSignal?.id === id) setSelectedSignal(prev => ({ ...prev, status: newStatus }));
   }, [selectedSignal]);
 
+  const handleDeleteSignal = useCallback((id) => {
+    setModalState({
+      isOpen: true,
+      title: 'Remove Incident?',
+      message: 'This will permanently remove the SOS signal from the live feed. This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          await fetch(`http://localhost:5000/api/sos/${id}`, { method: 'DELETE' });
+          setSignals(prev => prev.filter(s => s.id !== id));
+          if (selectedSignal?.id === id) setSelectedSignal(null);
+          setToastState({ isOpen: true, message: 'Signal removed successfully.' });
+        } catch (e) {
+          console.error('Failed to delete signal:', e);
+          setSignals(prev => prev.filter(s => s.id !== id));
+        }
+        setModalState(prev => ({ ...prev, isOpen: false }));
+      }
+    });
+  }, [selectedSignal]);
+
   const handleSendAlert = useCallback((region, message) => {
-    alert(`[MOCK API] Sent Alert to ${region}:\n"${message}"`);
+    setToastState({ isOpen: true, message: `Alert broadcasted to ${region} successfully.` });
   }, []);
 
   const handleAddShelter = (data) => setShelters(prev => [{ ...data, id: `sh-${Date.now()}` }, ...prev]);
@@ -155,7 +181,12 @@ function AdminApp({ onBack }) {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', overflow: 'hidden' }}>
         {activeTab === 'sos' && (
-          <Sidebar signals={signals} selectedSignal={selectedSignal} onSelectSignal={handleSelectSignal} />
+          <Sidebar 
+            signals={signals} 
+            selectedSignal={selectedSignal} 
+            onSelectSignal={handleSelectSignal} 
+            onDeleteSignal={handleDeleteSignal}
+          />
         )}
         {(activeTab === 'dashboard' || activeTab === 'pulse' || activeTab === 'settings') && (
           <div className="panel glass-panel" style={{ height: '100%', padding: '24px', color:'var(--text-muted)' }}>
@@ -206,6 +237,16 @@ function AdminApp({ onBack }) {
           onSendAlert={handleSendAlert}
         />
       </div>
+
+      <ConfirmModal 
+        {...modalState} 
+        onCancel={() => setModalState(prev => ({ ...prev, isOpen: false }))} 
+      />
+      <Toast 
+        isOpen={toastState.isOpen} 
+        message={toastState.message} 
+        onClose={() => setToastState({ isOpen: false, message: '' })} 
+      />
     </div>
   );
 }
