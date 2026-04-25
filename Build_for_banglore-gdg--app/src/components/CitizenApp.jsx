@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Shield, Zap, Droplets, PhoneCall, AlertTriangle, Clock, MapPin, Navigation, Info, AlertCircle, Check } from 'lucide-react';
 import Map from './Map';
-import { SHELTERS, HOSPITALS, DANGERS, USER_LOC } from '../utils/mockData';
+import { SHELTERS, HOSPITALS, DANGERS } from '../utils/mockData';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 const CitizenApp = () => {
   const [sosProgress, setSosProgress] = useState(0);
@@ -10,6 +12,14 @@ const CitizenApp = () => {
   const [activeDanger, setActiveDanger] = useState(null); 
   const [lastSync, setLastSync] = useState(0);
   const [lowPowerMode, setLowPowerMode] = useState(false);
+  const [userLocation, setUserLocation] = useState([12.9716, 77.5946]);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+      () => setUserLocation([12.9716, 77.5946])
+    );
+  }, []);
   
   // SOS Hold Logic (3 Seconds)
   useEffect(() => {
@@ -21,6 +31,19 @@ const CitizenApp = () => {
             setIsSosActive(true);
             setLowPowerMode(true);
             setIsSosHolding(false); // Reset holding state immediately on activation
+            
+            // Write SOS event to Firestore
+            addDoc(collection(db, 'sos_signals'), {
+              user_id: 'anonymous',
+              latitude: userLocation[0],
+              longitude: userLocation[1],
+              priority: 'high',
+              status: 'new',
+              source: 'sos_button',
+              has_image: false,
+              timestamp: serverTimestamp(),
+            });
+
             return 100;
           }
           return prev + 2;

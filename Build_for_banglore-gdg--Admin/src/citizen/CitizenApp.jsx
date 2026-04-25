@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Shield, Zap, Droplets, PhoneCall, AlertTriangle, Clock, MapPin, Navigation, AlertCircle, Check } from 'lucide-react';
+import { db } from '../firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import Map from './Map';
 import { SHELTERS, HOSPITALS, DANGERS, USER_LOC } from './mockData';
 import './citizen.css';
@@ -12,6 +14,14 @@ const CitizenApp = ({ onBack }) => {
   const [lastSync, setLastSync] = useState(0);
   const [lowPowerMode, setLowPowerMode] = useState(false);
   const [selectedMarker, setSelectedMarker] = useState(null);
+  const [userLocation, setUserLocation] = useState([12.9716, 77.5946]);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+      () => setUserLocation([12.9716, 77.5946])
+    );
+  }, []);
 
   // SOS Hold Logic (3 Seconds)
   useEffect(() => {
@@ -23,19 +33,17 @@ const CitizenApp = ({ onBack }) => {
             setIsSosActive(true);
             setLowPowerMode(true);
             setIsSosHolding(false);
-            // Write SOS event to shared localStorage so Admin can pick it up
-            const newSOS = {
-              id: `sos-citizen-${Date.now()}`,
-              latitude: USER_LOC[0] + (Math.random() - 0.5) * 0.005,
-              longitude: USER_LOC[1] + (Math.random() - 0.5) * 0.005,
-              areaName: 'MG Road (Citizen)',
-              timestamp: new Date().toISOString(),
-              priority: 'Critical',
-              status: 'New',
-              type: 'Citizen SOS',
-            };
-            const existing = JSON.parse(localStorage.getItem('sos_signals') || '[]');
-            localStorage.setItem('sos_signals', JSON.stringify([newSOS, ...existing].slice(0, 50)));
+            // Write SOS event to Firestore
+            addDoc(collection(db, 'sos_signals'), {
+              user_id: 'anonymous',
+              latitude: userLocation[0],
+              longitude: userLocation[1],
+              priority: 'high',
+              status: 'new',
+              source: 'sos_button',
+              has_image: false,
+              timestamp: serverTimestamp(),
+            });
             return 100;
           }
           return prev + 2;

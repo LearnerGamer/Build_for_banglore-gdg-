@@ -192,3 +192,17 @@
   border-radius: 50%;
   animation: pulse-red 1.5s infinite;
 }
+
+.ai-analysis-panel { display:flex; flex-direction:column; gap:8px; padding:12px; margin-top:12px; }
+.ai-summary { font-style:italic; font-size:13px; opacity:0.85; }
+.hazard-tags { display:flex; flex-wrap:wrap; gap:6px; }
+.hazard-tag { font-size:11px; padding:2px 8px; border-radius:12px; background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); }
+.units-rec { font-size:13px; font-weight:600; }
+.people-affected { font-size:12px; opacity:0.7; }
+.sms-zone-sender { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+.sms-result { font-size:12px; color:#22c55e; }
+.badge { font-size:11px; padding:2px 8px; border-radius:12px; font-weight:600; }
+.badge-chatbot { background:rgba(139,92,246,0.2); border:1px solid rgba(139,92,246,0.4); }
+.badge-incident { background:rgba(239,68,68,0.2); border:1px solid rgba(239,68,68,0.4); }
+.admin-login-wrapper { display:flex; align-items:center; justify-content:center; min-height:100vh; }
+.admin-login-card { display:flex; flex-direction:column; gap:16px; padding:32px; min-width:320px; }

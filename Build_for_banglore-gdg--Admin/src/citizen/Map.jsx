@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Circle, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { SHELTERS, HOSPITALS, DANGERS, USER_LOC } from './mockData';
+import { SHELTERS, HOSPITALS, DANGERS } from './mockData';
 
 // Custom icons
 const createShieldIcon = (color, label, iconType, isHighlighted = false) => new L.DivIcon({
@@ -50,11 +50,19 @@ function MapResizer() {
   return null;
 }
 
-const Map = ({ onMarkerClick, zoom = 13, center = USER_LOC, rescueMode = false, highlightId }) => {
+const Map = ({ onMarkerClick, zoom = 13, center, rescueMode = false, highlightId }) => {
+  const [userLocation, setUserLocation] = useState([12.9716, 77.5946]);
+
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation([pos.coords.latitude, pos.coords.longitude]),
+      () => setUserLocation([12.9716, 77.5946])
+    );
+  }, []);
   return (
     <div style={{ width: '100%', height: '100%', position: 'relative' }}>
       <MapContainer 
-        center={center} 
+        center={center || userLocation} 
         zoom={zoom} 
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
@@ -66,7 +74,7 @@ const Map = ({ onMarkerClick, zoom = 13, center = USER_LOC, rescueMode = false, 
         <MapResizer />
 
         {/* User Location */}
-        <Marker position={USER_LOC} icon={UserIcon} />
+        <Marker position={userLocation} icon={UserIcon} />
 
         {/* Shelter Markers */}
         {SHELTERS.map(s => (

@@ -1,8 +1,33 @@
 import React, { useState } from 'react';
 import { AlertCircle, CheckCircle, Navigation, Radio } from 'lucide-react';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 const ActionPanel = ({ selectedSignal, onUpdateStatus, onSendAlert }) => {
   const [alertMessage, setAlertMessage] = useState('');
+  
+  const fns = getFunctions();
+  const sendSmsAlert = httpsCallable(fns, 'sendSmsAlert');
+  const [smsMessage, setSmsMessage] = useState('');
+  const [smsSending, setSmsSending] = useState(false);
+  const [smsResult, setSmsResult] = useState(null);
+
+  const handleSendSms = async () => {
+    setSmsSending(true);
+    setSmsResult(null);
+    try {
+      const result = await sendSmsAlert({
+        message: smsMessage || selectedSignal.ai_summary || 'Emergency alert for your area',
+        centerLat: selectedSignal.latitude,
+        centerLng: selectedSignal.longitude,
+        radiusKm: 3,
+      });
+      setSmsResult(`SMS sent to ${result.data.sent} users in zone`);
+    } catch {
+      setSmsResult('SMS dispatch failed. Check Twilio config.');
+    } finally {
+      setSmsSending(false);
+    }
+  };
 
   if (!selectedSignal) {
     return (
@@ -48,6 +73,56 @@ const ActionPanel = ({ selectedSignal, onUpdateStatus, onSendAlert }) => {
             </div>
           </div>
         </div>
+
+        {selectedSignal && (
+          <div className="ai-analysis-panel glass-card">
+            <div style={{ display:'flex', gap:'6px', flexWrap:'wrap' }}>
+              {selectedSignal.source === 'chatbot' && (
+                <span className="badge badge-chatbot">AI Report</span>
+              )}
+              {selectedSignal.incident_type && (
+                <span className="badge badge-incident">{selectedSignal.incident_type}</span>
+              )}
+            </div>
+            {selectedSignal.ai_summary && (
+              <p className="ai-summary">{selectedSignal.ai_summary}</p>
+            )}
+            {selectedSignal.hazards_detected?.length > 0 && (
+              <div className="hazard-tags">
+                {selectedSignal.hazards_detected.map((h, i) => (
+                  <span key={i} className="hazard-tag">{h}</span>
+                ))}
+              </div>
+            )}
+            {selectedSignal.units_needed && (
+              <p className="units-rec">
+                {selectedSignal.units_needed}x {selectedSignal.recommended_unit_type} units recommended
+              </p>
+            )}
+            {selectedSignal.estimated_people_affected && (
+              <p className="people-affected">
+                ~{selectedSignal.estimated_people_affected} people affected
+              </p>
+            )}
+            <div className="sms-zone-sender">
+              <input
+                type="text"
+                className="glass-input"
+                placeholder={selectedSignal.ai_summary || 'Alert message for zone...'}
+                value={smsMessage}
+                onChange={e => setSmsMessage(e.target.value)}
+              />
+              <button
+                className="glass-button danger"
+                onClick={handleSendSms}
+                disabled={smsSending}
+              >
+                {smsSending ? 'Sending...' : 'Send SMS to zone'}
+              </button>
+              {smsResult && <p className="sms-result">{smsResult}</p>}
+            </div>
+          </div>
+        )}
 
         <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>Admin Actions</h3>
         

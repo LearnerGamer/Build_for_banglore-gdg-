@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { db } from './firebase';
+import { collection, onSnapshot, query, orderBy } from 'firebase/firestore';
 import './App.css';
 import Sidebar from './components/Sidebar';
 import MapPanel from './components/MapPanel';
@@ -51,21 +53,22 @@ function AdminApp({ onBack }) {
     fetchFieldForces().then(data => setForces(data));
   }, []);
 
-  // --- LIVE SOS SYNC from localStorage (picks up citizen SOS events) ---
+  // --- LIVE SOS SYNC from Firestore ---
   useEffect(() => {
-    const interval = setInterval(() => {
-      const saved = localStorage.getItem('sos_signals');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setSignals(prev => {
-          if (parsed.length !== prev.length || parsed[0]?.id !== prev[0]?.id) {
-            return parsed;
-          }
-          return prev;
-        });
-      }
-    }, 3000);
-    return () => clearInterval(interval);
+    const q = query(
+      collection(db, 'sos_signals'),
+      orderBy('timestamp', 'desc')
+    );
+    const unsub = onSnapshot(q, (snapshot) => {
+      const signalsData = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        // Normalize timestamp for local usage if needed
+        timestamp: doc.data().timestamp?.toDate().toISOString() || new Date().toISOString()
+      }));
+      setSignals(signalsData);
+    });
+    return () => unsub();
   }, []);
 
   // --- WEBSOCKET MOCK ---
