@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, Text, ScrollView, Dimensions, Platform, TouchableOpacity, Modal, TextInput } from 'react-native';
 import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -87,7 +87,10 @@ export default function HomeScreen() {
     return () => clearInterval(interval);
   }, [isSosActive]);
 
-  const handleSOS = async () => {
+  // UPDATE THIS with your computer's local IP (e.g., '192.168.1.5') to test on physical phone
+  const BRIDGE_IP = '10.41.136.2'; 
+
+  const handleSOS = useCallback(async () => {
     setIsSosActive(true);
     
     // Send SOS Signal to Bridge Server
@@ -103,7 +106,7 @@ export default function HomeScreen() {
         status: 'New'
       };
 
-      await fetch('http://localhost:5000/api/sos', {
+      await fetch(`http://${BRIDGE_IP}:5000/api/sos`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sosData)
@@ -112,7 +115,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.error('Failed to send SOS signal to bridge:', error);
     }
-  };
+  }, [user, location, BRIDGE_IP]);
 
   return (
     <View style={styles.container}>

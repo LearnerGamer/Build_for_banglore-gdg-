@@ -23,27 +23,35 @@ export const SOSButton: React.FC<SOSButtonProps> = ({ onSOS, isActive }) => {
 
       interval = setInterval(() => {
         setProgress(prev => {
-          if (prev >= 100) {
-            onSOS();
-            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-            setIsHolding(false);
-            return 100;
-          }
+          if (prev >= 100) return 100;
           if (prev % 10 === 0) {
             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
           }
-          return prev + 2;
+          return prev + 5; // Faster for testing
         });
-      }, 60);
+      }, 50);
     } else {
       Animated.spring(scaleAnim, {
         toValue: 1,
         useNativeDriver: true,
       }).start();
-      setProgress(0);
+      if (!isActive) setProgress(0);
     }
     return () => clearInterval(interval);
   }, [isHolding, isActive]);
+
+  // Trigger SOS when progress reaches 100
+  useEffect(() => {
+    if (progress >= 100 && !isActive) {
+      // Defer to next tick to avoid "update while rendering" error
+      setTimeout(() => {
+        onSOS();
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      }, 0);
+      setIsHolding(false);
+      setProgress(0);
+    }
+  }, [progress, isActive, onSOS]);
 
   return (
     <Pressable
