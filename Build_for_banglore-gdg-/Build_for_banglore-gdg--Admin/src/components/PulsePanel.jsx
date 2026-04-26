@@ -2,8 +2,8 @@ import React from 'react';
 import { Activity, CheckCircle, Image as ImageIcon } from 'lucide-react';
 
 const PulsePanel = ({ signals, onUpdateStatus }) => {
-  // Filter signals that have media and are not resolved
-  const mediaSignals = signals.filter(s => s.mediaUrls && s.mediaUrls.length > 0 && s.status !== 'Resolved');
+  // Filter signals that have been Dispatched
+  const mediaSignals = signals.filter(s => s.status === 'Dispatched');
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', height: '100%' }}>
@@ -48,7 +48,7 @@ const PulsePanel = ({ signals, onUpdateStatus }) => {
               
               <div style={{ display: 'flex', gap: '16px' }}>
                 <div style={{ width: '120px', height: '120px', flexShrink: 0, borderRadius: '8px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#12161f' }}>
-                  {signal.mediaUrls[0] ? (
+                  {signal.mediaUrls && signal.mediaUrls[0] ? (
                     <img src={signal.mediaUrls[0]} alt="Incident Media" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
                     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -73,7 +73,7 @@ const PulsePanel = ({ signals, onUpdateStatus }) => {
               
               <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '8px' }}>
                 <button
-                  onClick={() => onUpdateStatus(signal.id, 'Resolved')}
+                  onClick={() => onUpdateStatus(signal.id, 'Done')}
                   style={{
                     background: 'rgba(34, 197, 94, 0.15)',
                     color: '#4ade80',
@@ -92,7 +92,7 @@ const PulsePanel = ({ signals, onUpdateStatus }) => {
                   onMouseOut={(e) => e.currentTarget.style.background = 'rgba(34, 197, 94, 0.15)'}
                 >
                   <CheckCircle size={16} />
-                  Mark as Resolved
+                  Mark as Done
                 </button>
               </div>
             </div>

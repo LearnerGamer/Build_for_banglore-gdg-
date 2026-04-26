@@ -52,14 +52,16 @@ const ActionPanel = ({ selectedSignal, onUpdateStatus, onSendAlert }) => {
         <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>Admin Actions</h3>
         
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px' }}>
-          {selectedSignal.status !== 'Verified' && (
+          {selectedSignal.status !== 'Verified' && selectedSignal.status !== 'Dispatched' && selectedSignal.status !== 'Resolved' && selectedSignal.status !== 'Done' && (
             <button className="button-success" onClick={() => onUpdateStatus(selectedSignal.id, 'Verified')}>
               <CheckCircle size={18} /> Mark as Verified
             </button>
           )}
-          <button className="button-primary">
-            <Navigation size={18} /> Dispatch Field Force
-          </button>
+          {selectedSignal.status !== 'Dispatched' && selectedSignal.status !== 'Resolved' && selectedSignal.status !== 'Done' && (
+            <button className="button-primary" onClick={() => onUpdateStatus(selectedSignal.id, 'Dispatched')}>
+              <Navigation size={18} /> Dispatch Field Force
+            </button>
+          )}
         </div>
 
         <h3 style={{ fontSize: '1.1rem', marginBottom: '16px', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px' }}>Broadcast Alert</h3>

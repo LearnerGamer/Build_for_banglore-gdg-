@@ -121,7 +121,7 @@ const server = http.createServer((req, res) => {
           ...signal,
           id: existing ? existing.id : `sos-${Date.now()}`,
           timestamp: new Date().toISOString(),
-          status: existing ? existing.status : (signal.status || 'New'),
+          status: signal.status || (existing ? existing.status : 'New'),
           deviceId: deviceId,
           priority: 'Low', // Default to low, threat engine will escalate
           aiAnalysis: aiAnalysis
