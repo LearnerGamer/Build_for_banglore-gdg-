@@ -72,6 +72,10 @@ function AdminApp({ onBack }) {
               
               // Overwrite/Add signals from the bridge
               bridgeSignals.forEach(s => {
+                const existing = signalMap.get(s.id);
+                if (existing && existing.status && existing.status !== 'New') {
+                  s.status = existing.status;
+                }
                 signalMap.set(s.id, s);
               });
 
@@ -157,10 +161,24 @@ function AdminApp({ onBack }) {
 
   const handleSelectSignal = useCallback((signal) => setSelectedSignal(signal), []);
 
-  const handleUpdateStatus = useCallback((id, newStatus) => {
-    setSignals(prev => prev.map(s => s.id === id ? { ...s, status: newStatus } : s));
-    if (selectedSignal?.id === id) setSelectedSignal(prev => ({ ...prev, status: newStatus }));
-  }, [selectedSignal]);
+  const handleUpdateStatus = useCallback(async (id, newStatus) => {
+    const targetSignal = signals.find(s => s.id === id);
+    if (targetSignal) {
+      const updatedSignal = { ...targetSignal, status: newStatus };
+      setSignals(prev => prev.map(s => s.id === id ? updatedSignal : s));
+      if (selectedSignal?.id === id) setSelectedSignal(updatedSignal);
+      
+      try {
+        await fetch('http://localhost:5000/api/sos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(updatedSignal)
+        });
+      } catch (e) {
+        console.warn('Failed to sync status update to bridge', e);
+      }
+    }
+  }, [signals, selectedSignal]);
 
   const handleDeleteSignal = useCallback((id) => {
     setModalState({
