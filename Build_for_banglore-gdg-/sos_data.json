@@ -1,0 +1,15 @@
+[
+  {
+    "deviceId": "anon-device-1",
+    "name": "Anonymous User",
+    "email": "N/A",
+    "latitude": 13.114772320070651,
+    "longitude": 77.63484117907792,
+    "areaName": "Mobile App User",
+    "priority": "Critical",
+    "type": "Mobile Alert",
+    "status": "New",
+    "id": "sos-1777186297533",
+    "timestamp": "2026-04-26T08:24:16.352Z"
+  }
+]
