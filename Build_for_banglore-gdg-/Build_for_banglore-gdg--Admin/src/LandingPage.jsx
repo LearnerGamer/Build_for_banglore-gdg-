@@ -80,7 +80,7 @@ const LandingPage = ({ onSelect }) => {
               fontSize: '2rem', fontWeight: 900,
               margin: 0, letterSpacing: '-0.5px',
             }}>
-              CODECURE
+              SAVIOUR
             </h1>
             <p style={{ fontSize: '0.75rem', color: '#8b949e', margin: 0, letterSpacing: '2px', textTransform: 'uppercase' }}>
               Disaster Response Platform
@@ -306,7 +306,7 @@ const LandingPage = ({ onSelect }) => {
 
         {/* Footer */}
         <p style={{ marginTop: '48px', fontSize: '0.78rem', color: '#4b5563', letterSpacing: '0.5px' }}>
-          Built for <strong style={{ color: '#6b7280' }}>Google Developer Groups Bangalore</strong> · CODECURE Team
+          Built for <strong style={{ color: '#6b7280' }}>Google Developer Groups Bangalore</strong> · SAVIOUR Team
         </p>
       </div>
     </div>

@@ -160,7 +160,7 @@ function AdminApp({ onBack }) {
     <div className="app-container">
       <div className="top-bar-branding">
         <ShieldAlert color="var(--priority-critical)" />
-        CODECURE
+        SAVIOUR
         <div className="live-indicator" style={{marginLeft: '8px'}} title="Live WebSocket Connected"></div>
         {/* Back to Landing */}
         <button

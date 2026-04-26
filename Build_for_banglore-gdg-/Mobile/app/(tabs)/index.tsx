@@ -123,7 +123,7 @@ export default function HomeScreen() {
       {/* Top Header Overlay */}
       {!isSosActive && (
         <View style={styles.headerOverlay}>
-          <Text style={styles.brandText}>CODECURE</Text>
+          <Text style={styles.brandText}>SAVIOUR</Text>
           <TouchableOpacity onPress={() => user ? null : setShowLoginModal(true)}>
             {user ? (
               <View style={styles.profileBadge}>
@@ -294,7 +294,7 @@ export default function HomeScreen() {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Join CODECURE</Text>
+              <Text style={styles.modalTitle}>Join SAVIOUR</Text>
               <TouchableOpacity onPress={() => setShowLoginModal(false)}>
                 <Text style={{ color: '#8b949e', fontSize: 24 }}>✕</Text>
               </TouchableOpacity>

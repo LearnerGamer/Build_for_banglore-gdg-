@@ -1,6 +1,6 @@
-# CODECURE: Disaster Response Platform
+# SAVIOUR: Disaster Response Platform
 
-CODECURE is a unified disaster response and emergency management platform built for Google Developer Groups Bangalore. It integrates two distinct experiences into a single application:
+SAVIOUR is a unified disaster response and emergency management platform built for Google Developer Groups Bangalore. It integrates two distinct experiences into a single application:
 
 1. **Citizen Mode**: A mobile-optimized interface for civilians to trigger SOS alerts, view nearby shelters/hospitals on a map, and read safety guidelines.
 2. **Admin Dashboard**: A desktop command-center for first responders to monitor a live feed of SOS signals, manage field forces, track shelters, and coordinate emergency responses.

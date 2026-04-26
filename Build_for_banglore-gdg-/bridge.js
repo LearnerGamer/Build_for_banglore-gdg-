@@ -104,6 +104,6 @@ const server = http.createServer((req, res) => {
 
 const PORT = 5000;
 server.listen(PORT, () => {
-  console.log(`SOS Bridge Server (Optimized) running at http://localhost:${PORT}`);
+  console.log(`SAVIOUR Bridge Server (Optimized) running at http://localhost:${PORT}`);
 });
 
