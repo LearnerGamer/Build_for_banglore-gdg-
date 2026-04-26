@@ -1,11 +1,35 @@
 const http = require('http');
+const fs = require('fs');
+const path = require('path');
 
-let sosSignals = [];
+const DB_FILE = path.join(__dirname, 'sos_data.json');
+
+// Memory cache (Map for O(1) query optimization)
+let sosSignals = new Map();
+
+// Load data from file on startup
+try {
+  if (fs.existsSync(DB_FILE)) {
+    const data = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    data.forEach(s => sosSignals.set(s.deviceId || s.id, s));
+    console.log('Loaded signals from database file.');
+  }
+} catch (e) {
+  console.error('Error loading database file:', e);
+}
+
+const saveToDisk = () => {
+  try {
+    const data = Array.from(sosSignals.values());
+    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2));
+  } catch (e) {
+    console.error('Failed to save to disk:', e);
+  }
+};
 
 const server = http.createServer((req, res) => {
-  // CORS Headers
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
 
   if (req.method === 'OPTIONS') {
@@ -14,30 +38,59 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  // GET: Optimized O(1) conversion for transport
   if (req.url === '/api/sos' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(sosSignals));
-  } else if (req.url.startsWith('/api/sos/') && req.method === 'DELETE') {
+    res.end(JSON.stringify(Array.from(sosSignals.values())));
+  } 
+  
+  // DELETE: O(1) removal
+  else if (req.url.startsWith('/api/sos/') && req.method === 'DELETE') {
     const id = req.url.split('/').pop();
-    sosSignals = sosSignals.filter(s => s.id !== id);
+    
+    // Check both id and deviceId for removal
+    let found = false;
+    for (let [key, val] of sosSignals) {
+      if (val.id === id || val.deviceId === id) {
+        sosSignals.delete(key);
+        found = true;
+        break;
+      }
+    }
+
+    saveToDisk();
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ success: true, id }));
-    console.log('SOS Signal deleted:', id);
-  } else if (req.url === '/api/sos' && req.method === 'POST') {
+    res.end(JSON.stringify({ success: found }));
+  } 
+  
+  // POST: Single message per device optimization
+  else if (req.url === '/api/sos' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => { body += chunk.toString(); });
     req.on('end', () => {
       try {
         const signal = JSON.parse(body);
-        signal.id = signal.id || `sos-${Date.now()}`;
-        signal.timestamp = signal.timestamp || new Date().toISOString();
-        signal.status = signal.status || 'New';
         
-        sosSignals = [signal, ...sosSignals].slice(0, 50);
+        // UNIQUE CONSTRAINT: Single message per device
+        // We use deviceId as the primary key for the Map
+        const deviceId = signal.deviceId || 'unknown_device';
         
+        const existing = sosSignals.get(deviceId);
+        
+        const finalSignal = {
+          ...signal,
+          id: existing ? existing.id : `sos-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          status: existing ? existing.status : (signal.status || 'New'),
+          deviceId: deviceId
+        };
+
+        sosSignals.set(deviceId, finalSignal);
+        saveToDisk();
+
         res.writeHead(201, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: true, signal }));
-        console.log('New SOS Signal received:', signal);
+        res.end(JSON.stringify({ success: true, signal: finalSignal, isUpdate: !!existing }));
+        console.log(existing ? 'SOS Updated for device:' : 'New SOS from device:', deviceId);
       } catch (e) {
         res.writeHead(400);
         res.end(JSON.stringify({ error: 'Invalid JSON' }));
@@ -51,5 +104,6 @@ const server = http.createServer((req, res) => {
 
 const PORT = 5000;
 server.listen(PORT, () => {
-  console.log(`SOS Bridge Server running at http://localhost:${PORT}`);
+  console.log(`SOS Bridge Server (Optimized) running at http://localhost:${PORT}`);
 });
+

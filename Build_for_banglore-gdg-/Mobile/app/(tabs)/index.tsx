@@ -96,6 +96,7 @@ export default function HomeScreen() {
     // Send SOS Signal to Bridge Server
     try {
       const sosData = {
+        deviceId: user?.email || 'anon-device-1', // Unique constraint identifier
         name: user?.name || 'Anonymous User',
         email: user?.email || 'N/A',
         latitude: location.latitude,

@@ -66,19 +66,21 @@ function AdminApp({ onBack }) {
           const bridgeSignals = await response.json();
           if (bridgeSignals.length > 0) {
             setSignals(prev => {
-              // Combine bridge signals with mock/existing ones, avoiding duplicates by ID
-              const existingIds = new Set(prev.map(s => s.id));
-              const newFromBridge = bridgeSignals.filter(s => !existingIds.has(s.id));
-              if (newFromBridge.length > 0) {
-                return [...newFromBridge, ...prev].slice(0, 50);
-              }
-              return prev;
+              // Create a map of existing signals for easy merging
+              const signalMap = new Map(prev.map(s => [s.id, s]));
+              
+              // Overwrite/Add signals from the bridge
+              bridgeSignals.forEach(s => {
+                signalMap.set(s.id, s);
+              });
+
+              // Convert back to array and sort (Bridge signals first, then others)
+              return Array.from(signalMap.values()).slice(0, 100);
             });
           }
         }
       } catch (e) {
         console.warn('Bridge server not reachable, using local sync.');
-        // Fallback to local storage
         const saved = localStorage.getItem('sos_signals');
         if (saved) {
           const parsed = JSON.parse(saved);
