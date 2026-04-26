@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, ZoomControl, useMapEvents, Circle } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -71,6 +71,38 @@ const MapPanel = ({
 }) => {
   const center = [12.9716, 77.5946];
 
+  // --- CENTROID CLUSTERING LOGIC ---
+  const CLUSTER_THRESHOLD = 0.015; // 1.5km
+  const clusters = [];
+  const processedIds = new Set();
+
+  signals.forEach(s1 => {
+    if (processedIds.has(s1.id)) return;
+
+    // Find all signals close to this one
+    const members = signals.filter(s2 => {
+      const dist = Math.sqrt(Math.pow(s1.latitude - s2.latitude, 2) + Math.pow(s1.longitude - s2.longitude, 2));
+      return dist < CLUSTER_THRESHOLD;
+    });
+
+    if (members.length >= 2) {
+      // Calculate Centroid (Average position)
+      const avgLat = members.reduce((sum, m) => sum + m.latitude, 0) / members.length;
+      const avgLng = members.reduce((sum, m) => sum + m.longitude, 0) / members.length;
+      
+      clusters.push({
+        id: `cluster-${s1.id}`,
+        latitude: avgLat,
+        longitude: avgLng,
+        count: members.length,
+        priority: members.some(m => m.priority === 'Critical') ? 'Critical' : 'High'
+      });
+
+      // Mark all members as processed so we don't create duplicate clusters
+      members.forEach(m => processedIds.add(m.id));
+    }
+  });
+
   return (
     <div className="panel center-panel" style={{ height: '100%', zIndex: 0 }}>
       {/* react-leaflet z-index fix to sit properly in glass panels */}
@@ -88,13 +120,29 @@ const MapPanel = ({
         />
         <ZoomControl position="bottomright" />
         
-        {/* Layer: SOS Signals */}
+        {/* Layer: Unified Cluster Circles (One per group) */}
+        {layers.sos && clusters.map(cluster => (
+          <Circle
+            key={cluster.id}
+            center={[cluster.latitude, cluster.longitude]}
+            radius={800 + (cluster.count * 200)} // Grow with size
+            pathOptions={{ 
+              color: cluster.priority === 'Critical' ? '#ef4444' : '#f97316', 
+              fillColor: cluster.priority === 'Critical' ? '#ef4444' : '#f97316', 
+              fillOpacity: 0.2,
+              weight: 2,
+              dashArray: '10, 10'
+            }}
+          />
+        ))}
+
+        {/* Layer: Individual SOS Markers */}
         {layers.sos && signals.map(signal => (
           <Marker 
             key={signal.id}
             position={[signal.latitude, signal.longitude]}
             icon={createCustomIcon(signal)}
-            zIndexOffset={300} // Highest priority
+            zIndexOffset={300} 
             eventHandlers={{
               click: () => onSelectSignal(signal),
             }}

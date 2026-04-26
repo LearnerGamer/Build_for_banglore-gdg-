@@ -91,11 +91,48 @@ function AdminApp({ onBack }) {
     return () => clearInterval(interval);
   }, []);
 
+  // --- THREAT CLUSTERING ENGINE (Client Side) ---
+  useEffect(() => {
+    if (signals.length === 0) return;
+
+    const CLUSTER_RADIUS = 0.015; // Approx 1.5km for clustering
+    
+    setSignals(prev => {
+      let changed = false;
+      const updated = prev.map(target => {
+        // Find neighbors for this signal
+        const neighbors = prev.filter(other => {
+          const dist = Math.sqrt(
+            Math.pow(target.latitude - other.latitude, 2) + 
+            Math.pow(target.longitude - other.longitude, 2)
+          );
+          return dist < CLUSTER_RADIUS;
+        });
+
+        const clusterSize = neighbors.length;
+        let newPriority = target.priority;
+
+        // Escalate based on cluster size
+        if (clusterSize >= 4) newPriority = 'Critical';
+        else if (clusterSize >= 2) newPriority = 'High';
+        else if (target.isMock) newPriority = 'Low'; // Reset mock signals if isolated
+
+        if (newPriority !== target.priority) {
+          changed = true;
+          return { ...target, priority: newPriority };
+        }
+        return target;
+      });
+
+      return changed ? updated : prev;
+    });
+  }, [signals.length]); // Re-run when new signals added
+
   // --- WEBSOCKET MOCK ---
   useEffect(() => {
     const interval = setInterval(() => {
       if (Math.random() > 0.6) {
-        const newSOS = generateMockSOS();
+        const newSOS = { ...generateMockSOS(), isMock: true };
         setSignals(prev => [newSOS, ...prev].slice(0, 50));
       }
       if (Math.random() > 0.7 && forces.length > 0) {
